@@ -3,35 +3,173 @@
 
 <head>
     <title>My Chat</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+        }
+
+        .header {
+            background: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat {
+            width: 90%;
+            max-width: 600px;
+            height: 500px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 15px;
+        }
+
+        .name {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .message-text {
+            background: #e5e5e5;
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .my-message {
+            text-align: right;
+        }
+
+        .my-message .message-text {
+            background: #333;
+            color: white;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            gap: 10px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 20px;
+            background: #333;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #555;
+        }
+    </style>
 </head>
 
 <body>
 
-    <h1>My Chat</h1>
+    <div class="header">
+        <h1>My Chat</h1>
+    </div>
 
-    <h2>Messages</h2>
+    <div class="chat">
 
-    <p>Estell: Hey!</p>
-    <p>Ted: Hello!</p>
-    <p>Estell: How are you?</p>
+        <div class="messages" id="messages">
 
-    <input id="messageInput" type="text">
+            <div class="message">
+                <div class="name">Estell</div>
+                <div class="message-text">Hey!</div>
+            </div>
 
-    <button onclick="sendMessage()">Send</button>
+            <div class="message my-message">
+                <div class="name">Ted</div>
+                <div class="message-text">Hello!</div>
+            </div>
+
+            <div class="message">
+                <div class="name">Estell</div>
+                <div class="message-text">How are you?</div>
+            </div>
+
+        </div>
+
+        <div class="input-area">
+
+            <input
+                id="messageInput"
+                type="text"
+                placeholder="Type a message..."
+            >
+
+            <button onclick="sendMessage()">Send</button>
+
+        </div>
+
+    </div>
 
     <script>
+
         function sendMessage() {
+
             let input = document.getElementById("messageInput");
 
-            if (input.value != "") {
-                let message = document.createElement("p");
-                message.textContent = "Ted: " + input.value;
+            let messages = document.getElementById("messages");
 
-                document.body.appendChild(message);
+            if (input.value.trim() != "") {
+
+                let message = document.createElement("div");
+
+                message.className = "message my-message";
+
+                message.innerHTML = `
+                    <div class="name">Ted</div>
+                    <div class="message-text">${input.value}</div>
+                `;
+
+                messages.appendChild(message);
 
                 input.value = "";
+
+                messages.scrollTop = messages.scrollHeight;
             }
         }
+
+        document.getElementById("messageInput").addEventListener("keydown", function(event) {
+
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+
+        });
+
     </script>
 
 </body>
