@@ -19,6 +19,21 @@
 
     <button onclick="sendMessage()">Send</button>
 
+    <script>
+        function sendMessage() {
+            let input = document.getElementById("messageInput");
+
+            if (input.value != "") {
+                let message = document.createElement("p");
+                message.textContent = "Ted: " + input.value;
+
+                document.body.appendChild(message);
+
+                input.value = "";
+            }
+        }
+    </script>
+
 </body>
 
 </html>
