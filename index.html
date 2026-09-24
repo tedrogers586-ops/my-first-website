@@ -6,10 +6,11 @@
     <title>My Chat</title>
 
 ```
-<!-- Supabase library -->
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
     body {
         margin: 0;
         font-family: Arial, sans-serif;
@@ -56,6 +57,8 @@
         padding: 10px;
         border-radius: 10px;
         display: inline-block;
+        max-width: 80%;
+        word-wrap: break-word;
     }
 
     .my-message {
@@ -96,6 +99,14 @@
     button:hover {
         background: #555;
     }
+
+    .status {
+        text-align: center;
+        font-size: 12px;
+        color: #777;
+        padding-bottom: 5px;
+    }
+
 </style>
 ```
 
@@ -112,15 +123,22 @@
 
     <div class="messages" id="messages"></div>
 
+    <div class="status" id="status">
+        Connecting...
+    </div>
+
     <div class="input-area">
 
         <input
             id="messageInput"
             type="text"
             placeholder="Type a message..."
+            autocomplete="off"
         >
 
-        <button onclick="sendMessage()">Send</button>
+        <button onclick="sendMessage()">
+            Send
+        </button>
 
     </div>
 
@@ -129,140 +147,295 @@
 <script>
 
     // Your Supabase project
-    const SUPABASE_URL = "https://sdituclqvqdiantpkxag.supabase.co";
+    const SUPABASE_URL =
+        "https://sdituclqvqdiantpkxag.supabase.co";
 
-    // Your public publishable key
-    const SUPABASE_KEY = "sb_publishable_WZX13lT4p4LJZP7OXfU8Zg_CLP1gBPO";
+    // Your public Supabase publishable key
+    const SUPABASE_KEY =
+        "sb_publishable_WZX13lT4p4LJZP7OXfU8Zg_CLP1gBPO";
 
     // Connect to Supabase
-    const supabase = window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
+    const supabase =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
 
-    // Ask the user for their name
+
+    // Ask for username
     let username = prompt("What is your name?");
 
-    // Use Guest if they leave it blank
+
+    // If they don't enter a name
     if (!username || username.trim() === "") {
+
         username = "Guest";
+
     }
 
-    // Get the message box
-    const messages = document.getElementById("messages");
 
-    // Load old messages
+    // Remove spaces from beginning/end
+    username = username.trim();
+
+
+    // Get the messages area
+    const messages =
+        document.getElementById("messages");
+
+
+    // Get status text
+    const status =
+        document.getElementById("status");
+
+
+    // Load all previous messages
     async function loadMessages() {
 
         const { data, error } = await supabase
-            .from("messages")
-            .select("*")
-            .order("created_at", { ascending: true });
 
+            .from("messages")
+
+            .select("*")
+
+            .order("created_at", {
+                ascending: true
+            });
+
+
+        // If something went wrong
         if (error) {
-            console.error(error);
+
+            console.error(
+                "Error loading messages:",
+                error
+            );
+
+            status.textContent =
+                "Could not load messages.";
+
             return;
+
         }
 
+
+        // Clear the message area
         messages.innerHTML = "";
 
+
+        // Display every message
         data.forEach(function(message) {
+
             displayMessage(message);
+
         });
 
-        messages.scrollTop = messages.scrollHeight;
+
+        // Scroll to bottom
+        messages.scrollTop =
+            messages.scrollHeight;
+
+
+        status.textContent =
+            "Connected";
     }
 
-    // Display a message on the screen
+
+    // Display a message
     function displayMessage(message) {
 
-        const messageDiv = document.createElement("div");
+        const messageDiv =
+            document.createElement("div");
 
-        messageDiv.className = "message";
 
+        // Work out if this is our message
         if (message.username === username) {
-            messageDiv.className = "message my-message";
+
+            messageDiv.className =
+                "message my-message";
+
+        } else {
+
+            messageDiv.className =
+                "message";
+
         }
 
-        const nameDiv = document.createElement("div");
+
+        // Username
+        const nameDiv =
+            document.createElement("div");
 
         nameDiv.className = "name";
 
-        nameDiv.textContent = message.username;
+        nameDiv.textContent =
+            message.username;
 
-        const textDiv = document.createElement("div");
 
-        textDiv.className = "message-text";
+        // Message text
+        const textDiv =
+            document.createElement("div");
 
-        textDiv.textContent = message.message;
+        textDiv.className =
+            "message-text";
 
-        messageDiv.appendChild(nameDiv);
+        textDiv.textContent =
+            message.message;
 
-        messageDiv.appendChild(textDiv);
 
-        messages.appendChild(messageDiv);
+        // Put name inside message
+        messageDiv.appendChild(
+            nameDiv
+        );
 
-        messages.scrollTop = messages.scrollHeight;
+
+        // Put text inside message
+        messageDiv.appendChild(
+            textDiv
+        );
+
+
+        // Put message on screen
+        messages.appendChild(
+            messageDiv
+        );
+
+
+        // Scroll down
+        messages.scrollTop =
+            messages.scrollHeight;
     }
+
 
     // Send a message
     async function sendMessage() {
 
-        const input = document.getElementById("messageInput");
+        const input =
+            document.getElementById(
+                "messageInput"
+            );
 
-        const text = input.value.trim();
 
+        // Get the text
+        const text =
+            input.value.trim();
+
+
+        // Don't send empty messages
         if (text === "") {
+
             return;
+
         }
 
-        const { error } = await supabase
-            .from("messages")
-            .insert({
-                username: username,
-                message: text
-            });
 
+        // Disable input while sending
+        input.disabled = true;
+
+
+        // Send to Supabase
+        const { error } =
+            await supabase
+
+                .from("messages")
+
+                .insert({
+
+                    username: username,
+
+                    message: text
+
+                });
+
+
+        // If there was an error
         if (error) {
-            console.error(error);
-            alert("Could not send the message.");
-            return;
+
+            console.error(
+                "Error sending message:",
+                error
+            );
+
+            alert(
+                "Could not send message.\n\n" +
+                error.message
+            );
+
+        } else {
+
+            // Clear the input
+            input.value = "";
+
         }
 
-        input.value = "";
+
+        // Enable input again
+        input.disabled = false;
+
+
+        // Put cursor back in input
+        input.focus();
     }
 
+
     // Press Enter to send
-    document.getElementById("messageInput").addEventListener(
-        "keydown",
-        function(event) {
+    document
+        .getElementById("messageInput")
+        .addEventListener(
+            "keydown",
+            function(event) {
 
-            if (event.key === "Enter") {
-                sendMessage();
+                if (event.key === "Enter") {
+
+                    sendMessage();
+
+                }
+
             }
+        );
 
-        }
-    );
 
-    // Receive new messages instantly
+    // Listen for new messages
     supabase
+
         .channel("messages-channel")
+
         .on(
+
             "postgres_changes",
+
             {
+
                 event: "INSERT",
+
                 schema: "public",
+
                 table: "messages"
+
             },
+
             function(payload) {
 
-                displayMessage(payload.new);
+                displayMessage(
+                    payload.new
+                );
 
             }
-        )
-        .subscribe();
 
-    // Start by loading existing messages
+        )
+
+        .subscribe(
+            function(statusValue) {
+
+                console.log(
+                    "Realtime status:",
+                    statusValue
+                );
+
+            }
+        );
+
+
+    // Load messages when page opens
     loadMessages();
 
 </script>
