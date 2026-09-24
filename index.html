@@ -1,176 +1,272 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
     <title>My Chat</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
-        }
+```
+<!-- Supabase library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        .header {
-            background: #333;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f2f2f2;
+    }
 
-        .chat {
-            width: 90%;
-            max-width: 600px;
-            height: 500px;
-            margin: 30px auto;
-            background: white;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-        }
+    .header {
+        background: #333;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
 
-        .messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
+    .chat {
+        width: 90%;
+        max-width: 600px;
+        height: 500px;
+        margin: 30px auto;
+        background: white;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
 
-        .message {
-            margin-bottom: 15px;
-        }
+    .messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
 
-        .name {
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
+    .message {
+        margin-bottom: 15px;
+    }
 
-        .message-text {
-            background: #e5e5e5;
-            padding: 10px;
-            border-radius: 10px;
-            display: inline-block;
-        }
+    .name {
+        font-weight: bold;
+        margin-bottom: 3px;
+    }
 
-        .my-message {
-            text-align: right;
-        }
+    .message-text {
+        background: #e5e5e5;
+        padding: 10px;
+        border-radius: 10px;
+        display: inline-block;
+    }
 
-        .my-message .message-text {
-            background: #333;
-            color: white;
-        }
+    .my-message {
+        text-align: right;
+    }
 
-        .input-area {
-            display: flex;
-            padding: 15px;
-            border-top: 1px solid #ddd;
-            gap: 10px;
-        }
+    .my-message .message-text {
+        background: #333;
+        color: white;
+    }
 
-        #messageInput {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            font-size: 16px;
-            outline: none;
-        }
+    .input-area {
+        display: flex;
+        padding: 15px;
+        border-top: 1px solid #ddd;
+        gap: 10px;
+    }
 
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 20px;
-            background: #333;
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
-        }
+    #messageInput {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        font-size: 16px;
+        outline: none;
+    }
 
-        button:hover {
-            background: #555;
-        }
-    </style>
+    button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 20px;
+        background: #333;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    button:hover {
+        background: #555;
+    }
+</style>
+```
+
 </head>
 
 <body>
 
-    <div class="header">
-        <h1>My Chat</h1>
-    </div>
+```
+<div class="header">
+    <h1>My Chat</h1>
+</div>
 
-    <div class="chat">
+<div class="chat">
 
-        <div class="messages" id="messages">
+    <div class="messages" id="messages"></div>
 
-            <div class="message">
-                <div class="name">Estell</div>
-                <div class="message-text">Hey!</div>
-            </div>
+    <div class="input-area">
 
-            <div class="message my-message">
-                <div class="name">Ted</div>
-                <div class="message-text">Hello!</div>
-            </div>
+        <input
+            id="messageInput"
+            type="text"
+            placeholder="Type a message..."
+        >
 
-            <div class="message">
-                <div class="name">Estell</div>
-                <div class="message-text">How are you?</div>
-            </div>
-
-        </div>
-
-        <div class="input-area">
-
-            <input
-                id="messageInput"
-                type="text"
-                placeholder="Type a message..."
-            >
-
-            <button onclick="sendMessage()">Send</button>
-
-        </div>
+        <button onclick="sendMessage()">Send</button>
 
     </div>
 
-    <script>
+</div>
 
-        function sendMessage() {
+<script>
 
-            let input = document.getElementById("messageInput");
+    // Your Supabase project
+    const SUPABASE_URL = "https://sdituclqvqdiantpkxag.supabase.co";
 
-            let messages = document.getElementById("messages");
+    // Your public publishable key
+    const SUPABASE_KEY = "sb_publishable_WZX13lT4p4LJZP7OXfU8Zg_CLP1gBPO";
 
-            if (input.value.trim() != "") {
+    // Connect to Supabase
+    const supabase = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
-                let message = document.createElement("div");
+    // Ask the user for their name
+    let username = prompt("What is your name?");
 
-                message.className = "message my-message";
+    // Use Guest if they leave it blank
+    if (!username || username.trim() === "") {
+        username = "Guest";
+    }
 
-                message.innerHTML = `
-                    <div class="name">Ted</div>
-                    <div class="message-text">${input.value}</div>
-                `;
+    // Get the message box
+    const messages = document.getElementById("messages");
 
-                messages.appendChild(message);
+    // Load old messages
+    async function loadMessages() {
 
-                input.value = "";
+        const { data, error } = await supabase
+            .from("messages")
+            .select("*")
+            .order("created_at", { ascending: true });
 
-                messages.scrollTop = messages.scrollHeight;
-            }
+        if (error) {
+            console.error(error);
+            return;
         }
 
-        document.getElementById("messageInput").addEventListener("keydown", function(event) {
+        messages.innerHTML = "";
+
+        data.forEach(function(message) {
+            displayMessage(message);
+        });
+
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    // Display a message on the screen
+    function displayMessage(message) {
+
+        const messageDiv = document.createElement("div");
+
+        messageDiv.className = "message";
+
+        if (message.username === username) {
+            messageDiv.className = "message my-message";
+        }
+
+        const nameDiv = document.createElement("div");
+
+        nameDiv.className = "name";
+
+        nameDiv.textContent = message.username;
+
+        const textDiv = document.createElement("div");
+
+        textDiv.className = "message-text";
+
+        textDiv.textContent = message.message;
+
+        messageDiv.appendChild(nameDiv);
+
+        messageDiv.appendChild(textDiv);
+
+        messages.appendChild(messageDiv);
+
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    // Send a message
+    async function sendMessage() {
+
+        const input = document.getElementById("messageInput");
+
+        const text = input.value.trim();
+
+        if (text === "") {
+            return;
+        }
+
+        const { error } = await supabase
+            .from("messages")
+            .insert({
+                username: username,
+                message: text
+            });
+
+        if (error) {
+            console.error(error);
+            alert("Could not send the message.");
+            return;
+        }
+
+        input.value = "";
+    }
+
+    // Press Enter to send
+    document.getElementById("messageInput").addEventListener(
+        "keydown",
+        function(event) {
 
             if (event.key === "Enter") {
                 sendMessage();
             }
 
-        });
+        }
+    );
 
-    </script>
+    // Receive new messages instantly
+    supabase
+        .channel("messages-channel")
+        .on(
+            "postgres_changes",
+            {
+                event: "INSERT",
+                schema: "public",
+                table: "messages"
+            },
+            function(payload) {
+
+                displayMessage(payload.new);
+
+            }
+        )
+        .subscribe();
+
+    // Start by loading existing messages
+    loadMessages();
+
+</script>
+```
 
 </body>
 
