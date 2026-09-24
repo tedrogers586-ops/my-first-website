@@ -1,152 +1,84 @@
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Test</title>
 
-<script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
 
-const SUPABASE_URL = "https://sdituclqvqdiantpkxag.supabase.co";
+<body>
 
-const SUPABASE_KEY = "sb_publishable_WZX13lT4p4LJZP7OXfU8Zg_CLP1gBPO";
+    <h1>My Chat</h1>
 
-const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+    <p id="status">Testing connection...</p>
 
-let username = prompt("What is your name?");
+    <input id="messageInput" placeholder="Type a message">
+    <button onclick="sendMessage()">Send</button>
 
-if (!username || username.trim() === "") {
-    username = "Guest";
-}
+    <div id="messages"></div>
 
-username = username.trim();
+    <script>
+        const SUPABASE_URL = "https://sdituclqvqdiantpkxag.supabase.co";
 
-const messages = document.getElementById("messages");
+        // PUT YOUR SUPABASE PUBLISHABLE KEY BETWEEN THE QUOTES
+        const SUPABASE_KEY = "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
 
-const status = document.getElementById("status");
+        const supabase = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
 
-async function testConnection() {
+        async function testConnection() {
 
-    status.textContent = "Testing connection...";
+            const status = document.getElementById("status");
 
-    const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .limit(1);
+            status.textContent = "Connecting...";
 
-    if (error) {
+            const { data, error } = await supabase
+                .from("messages")
+                .select("*")
+                .limit(1);
 
-        console.error("SUPABASE ERROR:", error);
+            if (error) {
+                status.textContent = "ERROR: " + error.message;
+                console.log(error);
+                return;
+            }
 
-        status.textContent = "ERROR: " + error.message;
-
-        return;
-    }
-
-    status.textContent = "Connected to Supabase!";
-
-    loadMessages();
-}
-
-async function loadMessages() {
-
-    const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .order("created_at", {
-            ascending: true
-        });
-
-    if (error) {
-
-        console.error(error);
-
-        status.textContent = "ERROR: " + error.message;
-
-        return;
-    }
-
-    messages.innerHTML = "";
-
-    data.forEach(function(message) {
-
-        displayMessage(message);
-
-    });
-
-    messages.scrollTop = messages.scrollHeight;
-}
-
-function displayMessage(message) {
-
-    const messageDiv = document.createElement("div");
-
-    if (message.username === username) {
-        messageDiv.className = "message my-message";
-    } else {
-        messageDiv.className = "message";
-    }
-
-    const nameDiv = document.createElement("div");
-
-    nameDiv.className = "name";
-
-    nameDiv.textContent = message.username;
-
-    const textDiv = document.createElement("div");
-
-    textDiv.className = "message-text";
-
-    textDiv.textContent = message.message;
-
-    messageDiv.appendChild(nameDiv);
-
-    messageDiv.appendChild(textDiv);
-
-    messages.appendChild(messageDiv);
-
-    messages.scrollTop = messages.scrollHeight;
-}
-
-async function sendMessage() {
-
-    const input = document.getElementById("messageInput");
-
-    const text = input.value.trim();
-
-    if (text === "") {
-        return;
-    }
-
-    const { data, error } = await supabase
-        .from("messages")
-        .insert({
-            username: username,
-            message: text
-        })
-        .select();
-
-    if (error) {
-
-        console.error("SEND ERROR:", error);
-
-        alert("SEND ERROR:\n" + error.message);
-
-        return;
-    }
-
-    input.value = "";
-
-}
-
-document
-    .getElementById("messageInput")
-    .addEventListener("keydown", function(event) {
-
-        if (event.key === "Enter") {
-            sendMessage();
+            status.textContent = "CONNECTED! Supabase is working.";
+            console.log(data);
         }
 
-    });
+        async function sendMessage() {
 
-testConnection();
+            const input = document.getElementById("messageInput");
 
-</script>
+            const message = input.value.trim();
+
+            if (message === "") return;
+
+            const { data, error } = await supabase
+                .from("messages")
+                .insert([
+                    {
+                        username: "Ted",
+                        message: message
+                    }
+                ]);
+
+            if (error) {
+                alert("SEND ERROR: " + error.message);
+                console.log(error);
+                return;
+            }
+
+            input.value = "";
+
+            alert("Message sent!");
+        }
+
+        testConnection();
+    </script>
+
+</body>
+</html>
